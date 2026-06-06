@@ -1,0 +1,99 @@
+# Implementation Plan: Knowledge Hub Content Engine
+
+This document outlines the step-by-step technical plan to design, develop, and deploy the automated **Knowledge Hub Content Engine** utilizing the multi-agent system described in [gemini.md](file:///Users/jessicapiikkila/Documents/kordic-ai-agent/gemini.md).
+
+---
+
+## 1. System Architecture
+
+The Content Engine is built as a coordinated multi-agent pipeline using the Google Antigravity (AGY) SDK, a local database, and a Wix integration layer.
+
+```mermaid
+graph TD
+    A[Trend Scanner] --> B[Product Marketer Agent]
+    B -->|Prioritized Topics & Sources| C[Technical SME Agent]
+    C -->|Draft Content & Demos| D[Content Editor Agent]
+    D -->|Polished, Jargon-Free Articles| E[Publisher Agent]
+    E -->|Wix MCP API Calls| F[Wix MCP Integration Layer]
+    F -->|Write & Query CMS| G[(Wix CMS Portfolio)]
+    F -->|Upload Video/Assets| H[(Wix Media Manager)]
+    I[(Local Database)] <-->|Cache & Duplicate Checks| E
+```
+
+### Key Components:
+1. **Agent Orchestrator:** Manages state transition and passes payloads between agents:
+   * **Product Marketer:** Identifies topics, prioritizes keywords, validates sources.
+   * **Technical SME:** Standardizes content structures (Demos, Guides, How-tos, Whitepapers).
+   * **Content Editor:** Enforces Kordic style rules, blacklists, active voice, and rhythmic variety.
+   * **Publisher:** Receives the final polished target content format, performs duplication queries, handles media uploads, and writes to WIX CMS.
+2. **Local Storage Database (SQLite/JSON):**
+   * Stores fetched topics, validation logs, reference freshness, and publishing history.
+   * Used to run fast local pre-checks for duplicates.
+3. **Wix MCP Integration Layer:**
+   * Utilizes the `wix-mcp` tools to query, upload assets, and populate Wix CMS database collections.
+
+---
+
+## 2. Step-by-Step Implementation Phases
+
+### Phase 1: Environmental Setup & Foundation
+*   **Target File:** `package.json`, `.env`, `db.js`
+*   **Tasks:**
+    1. Initialize the project dependencies: `@google/antigravity-sdk` (or equivalent core orchestrator packages) and SQLite/database drivers.
+    2. Set up the local SQLite database schema:
+       * `topics` (id, title, vertical, category, raw_content, reference_date, status)
+       * `publications` (id, topic_id, wix_item_id, published_at)
+    3. Configure environment variables for Wix site connection (`WIX_API_KEY`, `WIX_ACCOUNT_ID`, `WIX_SITE_ID`).
+
+### Phase 2: Product Marketer Agent Implementation
+*   **Target File:** `agents/product_marketer.js`
+*   **Tasks:**
+    1. Implement keyword and trend scanning logic (mocked or using Google Search integrations).
+    2. Build the prioritization engine (rank by search volume over 14 days and check for low existing authoritative content).
+    3. Construct the source validation module (resolves at least 3 external vendor docs or official reports per topic).
+    4. Format the output payload containing:
+       * `title` (descriptive)
+       * `vertical` (Atlassian system of work, AI Adoption, Agentic Workflow, MCP Connectors)
+       * `target_format` (Video Demo, How-to, Solution Guide, Whitepaper)
+       * `value_proposition` (3-sentence summary)
+       * `sources` (list of 3 verified URLs)
+
+### Phase 3: Technical SME Agent Implementation
+*   **Target File:** `agents/technical_sme.js`
+*   **Tasks:**
+    1. Implement prompt templates for each target format:
+       * **Agentic Demos:** 2-minute video script, persona description, tool selection.
+       * **How-to Articles:** Scenario, challenge, max 10-step implementation guide.
+       * **Solution Guides:** Executive summary, architecture diagram, 3-phase configuration steps, success criteria, security/governance tips.
+       * **Whitepapers:** Executive summary, challenge/cost of inaction, core methodology, implementation mechanics, business outcomes, references.
+    2. Enforce structural limits (e.g., maximum length of 10 steps for how-to articles).
+
+### Phase 4: Content Editor Agent Implementation
+*   **Target File:** `agents/content_editor.js`
+*   **Tasks:**
+    1. Implement post-processing rules to enforce the **Kordic Brand Style Guide**:
+       * **Title Guard:** Truncate or rewrite titles to be strictly under 5 words.
+       * **Jargon Replacement:** Programmatically flag and replace blacklisted nouns, verbs, and adjectives (e.g., *leverage* -> *use*, *delve* -> *dissect*, remove *pivotal*, *bespoke*).
+       * **Transition Stripping:** Delete filler transitions (*furthermore, consequently, moreover*).
+       * **Aesthetic Audit:** Validate paragraph rhythm, checking for the "One-Sentence Punch" and asymmetric bullet lists.
+
+### Phase 5: Publisher Agent & Wix MCP Integration
+*   **Target File:** `agents/publisher.js`
+*   **Tasks:**
+    1. Implement `ListWixSites` and `ManageWixSite` connections to target the active professional services portfolio site.
+    2. Write the pre-check query against the Wix Database using POST on `/wix-data/v2/items/query` to verify that no article with the same title exists.
+    3. Build the media upload module using the Wix Media Manager Import API for demo video assets.
+    4. Call POST `/wix-data/v2/items` (CMS Data Items CRUD) to store and publish the polished document payload into the Wix CMS portfolio collection.
+
+---
+
+## 3. Verification & Testing Plan
+
+### Automated Tests
+*   Run unit tests on the **Content Editor** to verify blacklisted word detection and title length constraints.
+*   Run mock database tests validating that duplicate titles are rejected.
+*   Run API test calls to `wix-mcp` using a sandbox site to verify collection reads/writes.
+
+### Manual Verification
+*   Deploy the engine locally and run an end-to-end dry run.
+*   Inspect the Wix CMS dashboard to confirm that the generated collection items (projects) are populated correctly with the corresponding fields and categories.
