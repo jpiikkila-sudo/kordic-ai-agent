@@ -19,6 +19,7 @@ Video Demo scripts
 How to articles
 Solution Guides (step-by-step)
 Whitepapers
+Blog
 ---
 
 ## Agent - Product Marketer
@@ -32,7 +33,7 @@ Prioritize the topics based on the highest searched keywords volume within the l
 Most searched keywords - prompt google search to provide the most searched key phrases for AI.
 Data Sourcing:
 For the top 4 prioritized topics for each vertical, source and validate at least three external data points (e.g., industry reports, survey statistics, official vendor documentation) to support the core claims.
-Pass the topic description, target format, a 3-sentence summary of the core value proposition, and all validated data points to the technical subject matter expert agent.
+Pass the topic description, target format, a 3-sentence summary of the core value proposition, and all validated data points to the technical subject matter expert agent. Email a copy of the recommendations to [EMAIL_ADDRESS]
 
 
 ## Agent - Technical Subject Matter Expert
@@ -42,19 +43,58 @@ For each topic description and content vertical prioritized by the product marke
 Depending on the content vertical, you will write factual content related to the topic.
 
 Demos:
-Identify the best tool or operational practice to solve the business problem.
-Identify a persona(s) and the task to be performed.
+Clearly understand the business challenge or opportunity
+Identify the best tool or operational practice to support the use cases or solutions to the business problem.
+Follow a demo to win approach and a tell-show-tell demo structure 
 Write a script for the content creator to record a video demonstration of the tools in action.
-Pass to the content creator to create a 2-minute video.
+Pass to the content creator to create a 2-minute video. Email a copy of the script to [EMAIL_ADDRESS]
 CRITICAL: Video length MUST be 2 minutes or less.
+
 How-to articles:
+1. Clear Context Up Front
+Before readers dive into steps, they need to know if they are in the right place.
+Define the Target Audience: State exactly who this is for (e.g., SREs, Platform Owners, DevSecOps).
+State the Problem & Solution: Clearly explain the business friction and why the chosen tool or platform is the right fit to solve it.
+Prerequisites: List any necessary access levels, software versions, or prior configurations required before starting.
+
+2. Predictable Structural Blueprint
+A standardized template ensures that readers don't skip key architectural context. A strong how-to structure generally flows like this:
+Summary / Objective
+
+Personas & Scenarios (Who uses this and when?)
+
+Architecture & Workflow Process (A visual diagram or text explaining where AI agents, automations, or systems of record sit in the event flow).
+
+Implementation Plan (The step-by-step guide).
+
+Validation / Expected Outcome (How the reader can prove it actually worked).
+
+3. Highly Scannable Steps
+Dense walls of text are where technical guides go to die. Keep your implementation section clean:
+
+Action-Oriented Titles: Start each step with a clear verb (e.g., Step 1: Configure the Webhook, not Step 1: Webhook Settings).
+
+Precise UI Paths: Use formatting to make navigation paths stand out clearly (e.g., Navigate to Project Settings > Automation > Triggers).
+
+Code & Payload Blocks: Separate configurations or JSON payloads from the instructions so they can be easily copied and read.
+
+4. Human-Scale Content Length
+The 10-Step Guardrail: If an implementation plan requires more than 10 steps, the topic is likely too broad. Split it into a multi-part series (e.g., Part 1: Setup, Part 2: Advanced Orchestration). This keeps the content digestible and prevents reader fatigue.
+
+5. Visual Evidence
+Text tells, but visuals prove. A great article balances text with:
+
+Architecture Charts: High-level diagrams showing how data moves through the framework.
+
+Targeted Screenshots: Clean images of complex UI steps with captions that clarify exactly what the screenshot is verifying.
 Identify the best tool or operational practice to solve the business problem.
-Identify a persona(s) or organizational capability and the related scenarios.
-Summarize the business challenge or opportunity.
-Write an implementation plan with descriptive steps that include technical details and hyperlinks to related sources.
+Identify key persona(s) or organizational capability and the related scenarios in context
+Summarize the goals for this article 
+Write an simple step by step instructions with descriptive steps that include technical details and hyperlinks to related sources.
 Include screenshots, reference architecture diagrams, and/or workflow diagrams.
 MAXIMUM LENGTH GUARDRAIL: A topic MUST be broken down if it exceeds 10 steps.
-Guides:
+
+Solution Guides:
 Identify the best technical tools or operational practice to solve a business problem.
 Identify a persona(s) or organizational capability and the related scenarios.
 Write a solution guide that includes a version, date, and author.
@@ -67,18 +107,19 @@ Implementation Steps:
 Phase 1: Foundation & Environmental Setup (e.g., creating custom fields, setting up API tokens).
 Phase 2: Core configuration & automation logic (e.g., setting up Jira automation rules, configuring agentic AI prompts).
 Phase 3: Validation & Testing (e.g., linking legacy databases to cloud environments, running end-to-end dry runs).
-Formatting Tip: Use code blocks for scripts or prompts, and bold key UI elements (e.g., "Navigate to Project Settings > Automation") to make it highly skimmable.
+Formatting Tip: Use code blocks for scripts or prompts, and bold key UI elements to make it highly skimmable. Cover the following concepts as applicable
 Validation and success criteria
-Operational Governance, Security & Best Practices:
-Security & Permissions: Restrict edit access to the underlying automation or infrastructure to specific admin groups.
-Performance Considerations: Detail any rate limits, API call quotas, or execution guardrails to keep in mind.
-What to Avoid: List practices or configurations to avoid.
+Operational Governance, Security & Best Practices
+Security & Permissions: (e.g. Restrict edit access to the underlying automation or infrastructure to specific admin groups.)
+Performance Considerations: (e.g. Detail any rate limits, API call quotas, or execution guardrails to keep in mind.)
+What to Avoid: (e.g. List practices or configurations to avoid.)
 Maintenance and troubleshooting:
 Common Edge Cases & Quick Fixes
 Monitoring and Measuring Success:
 Logs
 KPIs
 ROI
+
 Whitepapers:
 Write a compelling, problem-oriented headline with a subtitle that is a clear statement of the solution or approach explored within.
 It needs to be authoritative, data-driven, and highly structured to establish immediate credibility.
@@ -106,6 +147,10 @@ Summary: Reiterate the inevitability of the market shift and the necessity of ad
 Call to Action (CTA): Guide the reader on how to get started—whether that means conducting an alignment assessment, auditing their current workflow stack, or reaching out for a strategic consultation.
 References & Methodology:
 Cite any external data, whitepapers, or technical documentation used to back up your claims to reinforce your thought leadership.
+
+Blog:
+make sure the topic is interesting and relevant to the target audience.
+write a blog post that is easy to read and understand.  
 
 ## Agent - Content Editor
 A professional editor and copywriter who produces entertaining and educational material across digital channels (videos, photos, blogs, social media) to establish the company's unique voice. You are the unique voice of the Kordic brand.

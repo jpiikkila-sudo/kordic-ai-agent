@@ -43,6 +43,12 @@ def load_system_instructions(agent_name: str) -> str:
             next_idx = len(content)
             
         instructions = content[start_idx:next_idx].strip()
+        
+        # Replace bracketed email placeholders with the CREATOR_EMAIL env variable
+        creator_email = os.getenv("CREATOR_EMAIL", "jpiikkila@kordic.ai")
+        instructions = re.sub(r"\[[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\]", creator_email, instructions)
+        instructions = instructions.replace("[EMAIL_ADDRESS]", creator_email)
+        
         return instructions
     except FileNotFoundError:
         print("Error: gemini.md file not found. Ensure it exists in the workspace.")
@@ -187,7 +193,21 @@ async def run_pipeline():
     
     # Parse discovered topics
     discovered_topics = parse_topics(pm_output)
-    print(f"\nParsed {len(discovered_topics)} topics. Starting verification and publishing loop...")
+    
+    # Human-in-the-loop topic selection
+    print("\nWhich of these topics would you like to pass to the Technical SME agent for architectural detailing?")
+    for idx, topic in enumerate(discovered_topics, start=1):
+        print(f"[{idx}] {topic['title']} ({topic['category']}) - {topic['vertical']}")
+        
+    user_input = input("\nEnter the numbers of the topics to process (comma-separated, e.g., '1,3'), or press Enter to process all: ")
+    if user_input.strip():
+        try:
+            selected_indices = [int(i.strip()) - 1 for i in user_input.split(",") if i.strip()]
+            discovered_topics = [discovered_topics[i] for i in selected_indices if 0 <= i < len(discovered_topics)]
+        except ValueError:
+            print("Invalid input. Processing all discovered topics by default.")
+            
+    print(f"\nProceeding with {len(discovered_topics)} selected topics. Starting verification and publishing loop...")
 
     # 2. Iterate through each topic
     for idx, topic in enumerate(discovered_topics, start=1):
