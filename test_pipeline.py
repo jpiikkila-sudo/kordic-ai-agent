@@ -53,13 +53,14 @@ class TestContentEngine(unittest.TestCase):
         self.assertEqual(dup_row_id, -1)
         
         # Mark published
-        db.mark_published("Test Article Title", "wix-item-12345", status="draft")
+        db.mark_published("Test Article Title", "wix-item-12345", local_file_path="output_articles/How-to/test.md", status="draft")
         
         # Verify retrieved articles
         articles = db.get_all_articles()
         self.assertEqual(len(articles), 1)
         self.assertEqual(articles[0]["title"], "Test Article Title")
         self.assertEqual(articles[0]["wix_item_id"], "wix-item-12345")
+        self.assertEqual(articles[0]["local_file_path"], "output_articles/How-to/test.md")
         self.assertEqual(articles[0]["status"], "draft")
 
     def test_get_all_articles_sorting(self):

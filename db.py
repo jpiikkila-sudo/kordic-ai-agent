@@ -23,7 +23,8 @@ def init_db():
             category TEXT NOT NULL,
             reference_age INTEGER DEFAULT 0, -- Age of references in days (freshness)
             wix_item_id TEXT, -- Wix CMS item ID if registered as draft
-            status TEXT DEFAULT 'draft', -- 'draft' (in Wix for human review) or 'published' (live)
+            local_file_path TEXT, -- Local path to output file
+            status TEXT DEFAULT 'draft', -- 'draft' (in Wix or local file) or 'published' (live)
             published_at TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -62,17 +63,17 @@ def save_article(title: str, vertical: str, content: str, category: str, referen
         conn.close()
     return last_row_id
 
-def mark_published(title: str, wix_item_id: str, status: str = 'draft'):
+def mark_published(title: str, wix_item_id: str, local_file_path: str = None, status: str = 'draft'):
     """
-    Marks an article with the corresponding Wix CMS Item ID and status (default: 'draft').
+    Marks an article with the corresponding Wix CMS Item ID, local file path, and status.
     """
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
         UPDATE articles 
-        SET wix_item_id = ?, status = ?, published_at = CURRENT_TIMESTAMP 
+        SET wix_item_id = ?, local_file_path = ?, status = ?, published_at = CURRENT_TIMESTAMP 
         WHERE title = ?
-    """, (wix_item_id, status, title.strip()))
+    """, (wix_item_id, local_file_path, status, title.strip()))
     conn.commit()
     conn.close()
 
@@ -83,7 +84,7 @@ def get_all_articles():
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT title, vertical, category, reference_age, wix_item_id, status, created_at 
+        SELECT title, vertical, category, reference_age, wix_item_id, local_file_path, status, created_at 
         FROM articles 
         ORDER BY category ASC, reference_age ASC
     """)
@@ -98,7 +99,8 @@ def get_all_articles():
             "category": r[2],
             "reference_age": r[3],
             "wix_item_id": r[4],
-            "status": r[5],
-            "created_at": r[6]
+            "local_file_path": r[5],
+            "status": r[6],
+            "created_at": r[7]
         })
     return articles

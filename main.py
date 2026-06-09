@@ -255,7 +255,21 @@ async def run_pipeline():
         db.save_article(polished_title, vertical, editor_output, category, ref_age)
         print(f"  [Local DB] Saved polished article '{polished_title}' locally.")
 
-        # Step 2e: Publisher posts to Wix (or gets mock publish ID)
+        # Step 2e: Save locally to output_articles/ directory in Markdown format
+        os.makedirs("output_articles", exist_ok=True)
+        # Create a folder for the category inside output_articles
+        category_dir = os.path.join("output_articles", category.replace(" ", "_"))
+        os.makedirs(category_dir, exist_ok=True)
+        
+        # Clean title for filename
+        clean_filename = re.sub(r'[\\/*?:"<>| ]', '_', polished_title).strip('_') + ".md"
+        local_file_path = os.path.join(category_dir, clean_filename)
+        
+        with open(local_file_path, "w") as f:
+            f.write(f"# {polished_title}\n\n**Vertical:** {vertical}\n**Category:** {category}\n**Reference Age:** {ref_age} days\n\n---\n\n{editor_output}")
+        print(f"  [Local File] Saved formatted article locally at: {local_file_path}")
+
+        # Step 2f: Publisher posts to Wix (or gets mock publish ID)
         print("  [Publishing] Sending to Wix CMS...")
         if MOCK_MODE:
             wix_item_id = await get_mock_response("Publisher", polished_title)
@@ -271,7 +285,7 @@ async def run_pipeline():
                 wix_id_match = re.search(r"wix-item-\S+", publisher_output)
                 wix_item_id = wix_id_match.group(0) if wix_id_match else "unknown-wix-id"
                 
-        db.mark_published(polished_title, wix_item_id, status='draft')
+        db.mark_published(polished_title, wix_item_id, local_file_path=local_file_path, status='draft')
         print(f"  [Published] Wix item created successfully as a DRAFT. ID: {wix_item_id}")
 
     # Print final execution report
@@ -279,7 +293,8 @@ async def run_pipeline():
     print("Final Local Resource Hub Articles (Sorted by Freshness):")
     for art in db.get_all_articles():
         publish_status = f"Wix ID: {art['wix_item_id']} [Status: {art['status'].upper()}]" if art['wix_item_id'] else "Local Only"
-        print(f"- [{art['category']}] {art['title']} | Reference Age: {art['reference_age']} days | {publish_status}")
+        file_info = f" | File: {art['local_file_path']}" if art['local_file_path'] else ""
+        print(f"- [{art['category']}] {art['title']} | Reference Age: {art['reference_age']} days | {publish_status}{file_info}")
     print("==================================================")
 
 if __name__ == "__main__":

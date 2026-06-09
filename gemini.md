@@ -32,8 +32,8 @@ Scan the latest trends pertaining to the knowledge verticals.
 Prioritize the topics based on the highest searched keywords volume within the last 14 days and low existing authoritative content (content gap analysis).
 Most searched keywords - prompt google search to provide the most searched key phrases for AI.
 Data Sourcing:
-For the top 4 prioritized topics for each vertical, source and validate at least three external data points (e.g., industry reports, survey statistics, official vendor documentation) to support the core claims.
-Pass the topic description, target format, a 3-sentence summary of the core value proposition, and all validated data points to the technical subject matter expert agent. Email a copy of the recommendations to [EMAIL_ADDRESS]
+For the top 4 prioritized topics for each vertical, source and validate at least three external data points (e.g., industry reports, survey statistics, official vendor documentation) to support the core claims. Email a copy of the script to [EMAIL_ADDRESS]
+Pass the topic description, target format, a 3-sentence summary of the core value proposition, and all validated data points to the technical subject matter expert agent. 
 
 
 ## Agent - Technical Subject Matter Expert
