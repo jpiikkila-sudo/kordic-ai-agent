@@ -2,63 +2,95 @@
   Vertical: Atlassian system of work and Rovo
   Category: Guide
   Reference Age: 2
+  Rationale: Rovo agents rely on custom data sources; custom MCP connectors are the standard pattern for exposing Atlassian work context safely.
+  Source Links: https://modelcontextprotocol.io, https://www.atlassian.com/software/rovo, https://github.com/modelcontextprotocol/servers
 - Title: Stateful Multi-Agent Execution of Production Release Protocols
   Vertical: Enterprise Agentic Workflows & Tools
   Category: Guide
   Reference Age: 3
+  Rationale: Automated deployments require agents to maintain state and handle rollbacks during release gates, addressing a high-friction Ops area.
+  Source Links: https://www.gartner.com/devops, https://www.harness.io/blog/release-orchestration, https://dzone.com/articles/multi-agent-orchestration
 - Title: Measuring Direct Developer Velocity and ROI post-AI Rollouts
   Vertical: AI Adoption Trends
   Category: Blog
   Reference Age: 3
+  Rationale: Engineering leaders struggle to justify AI assistant spend; quantitative measurement metrics are highly sought after.
+  Source Links: https://www.mckinsey.com/industries/technology-media-and-telecom, https://dora.dev/publications/, https://research.google/pubs/
 - Title: Operationalizing the EU AI Act Risk Mitigation Strategy
   Vertical: AI Governance
   Category: Guide
   Reference Age: 4
+  Rationale: Enterprises face imminent compliance deadlines under the EU AI Act; operational playbooks are key to avoiding large fines.
+  Source Links: https://artificialintelligenceact.eu, https://www.complianceweek.com/ai-governance, https://www.euractiv.com/section/artificial-intelligence/
 - Title: Auto-Grooming Jira Backlogs with Atlassian Rovo Agents
   Vertical: Atlassian system of work and Rovo
   Category: How-to
   Reference Age: 4
+  Rationale: Backlog hygiene is a major sink of developer time; Atlassian's new Rovo search and agent capability can automate this.
+  Source Links: https://www.atlassian.com/software/rovo, https://www.infoq.com/news/atlassian-rovo-ai/, https://techcrunch.com/atlassian-rovo-agent/
 - Title: Zero-Touch SRE Incident Mitigation via Model Context Protocol Agents
   Vertical: Enterprise Agentic Workflows & Tools
   Category: Demo
   Reference Age: 4
+  Rationale: Alert fatigue is SRE's largest bottleneck; autonomous diagnostic agents running via MCP can triage logs before humans wake up.
+  Source Links: https://modelcontextprotocol.io, https://sre.google/sre-book/, https://www.datadoghq.com/blog/sre-incident-response/
 - Title: High-Performance LLM Routing and Cost Optimization
   Vertical: AI Adoption Trends
   Category: Whitepaper
   Reference Age: 5
+  Rationale: Routing between cheaper edge models and heavy frontier LLMs can reduce enterprise API token bills by up to 60%.
+  Source Links: https://arxiv.org/abs/2305.14815, https://www.anyscale.com/blog/llm-routing, https://newsletter.lennysnewsletter.com/p/developer-velocity
 - Title: Implementing Real-Time Vector-Based Content Guardrails
   Vertical: AI Governance
   Category: How-to
   Reference Age: 5
+  Rationale: Real-time semantic moderation prevents LLM outputs from violating company policy or leaking private corporate data.
+  Source Links: https://github.com/guardrails-ai/guardrails, https://www.nvidia.com/neMo-guardrails, https://aws.amazon.com/bedrock/guardrails/
 - Title: Building Stateful Slack & Teams ChatOps with Atlassian Rovo
   Vertical: Atlassian system of work and Rovo
   Category: Blog
   Reference Age: 6
+  Rationale: Chat remains the primary work interface; extending Rovo agents to Slack allows non-technical stakeholders to pull Jira data dynamically.
+  Source Links: https://api.slack.com, https://www.atlassian.com/software/rovo, https://learn.microsoft.com/en-us/microsoftteams/platform/
 - Title: Security sandboxing of Autonomous Agents running arbitrary CLI actions
   Vertical: Enterprise Agentic Workflows & Tools
   Category: Whitepaper
   Reference Age: 7
+  Rationale: Fleet agents with command-line tools represent a significant security risk; containerized, read-only system sandboxes are crucial.
+  Source Links: https://www.docker.com/resources, https://gvisor.dev/docs/, https://owasp.org/www-project-top-10-for-large-language-model-applications/
 - Title: Enterprise-Scale RAG Optimization using Graph Hybrid Vector Databases
   Vertical: AI Adoption Trends
   Category: How-to
   Reference Age: 8
+  Rationale: Standard vector search fails on complex relational data; graph RAG provides deep semantic cross-references for wikis.
+  Source Links: https://neo4j.com/developer/graph-rag/, https://www.microsoft.com/en-us/research/blog/graphrag/, https://www.pinecone.io/learn/hybrid-search/
 - Title: The Enterprise Taxonomy: Breaking Knowledge Silos with Rovo Search
   Vertical: Atlassian system of work and Rovo
   Category: Whitepaper
   Reference Age: 9
+  Rationale: Corporate information is scattered across Confluence, Google Drive, and Sharepoint; Rovo unified search breaks these silos.
+  Source Links: https://www.atlassian.com/software/rovo, https://www.forrester.com/report/Knowledge-Management, https://www.gartner.com/document/enterprise-search
 - Title: Deploying LLMs in Air-Gapped Kubernetes Environments
   Vertical: AI Adoption Trends
   Category: Guide
   Reference Age: 10
+  Rationale: Financial and healthcare organizations cannot send data to public APIs; self-hosting LLMs on-prem is mandatory.
+  Source Links: https://kubernetes.io/docs/, https://huggingface.co/docs/transformers, https://vllm.ai
 - Title: Auditing Autonomous Multi-Agent Systems for Compliance and Traceability
   Vertical: AI Governance
   Category: Whitepaper
   Reference Age: 11
+  Rationale: As fleets of autonomous agents operate, we need structured transaction logs to audit decisions and prevent rogue loops.
+  Source Links: https://owasp.org/www-project-top-10-for-large-language-model-applications/, https://www.iso.org/standard/iso-iec-42001, https://csrc.nist.gov/publications/detail/sp/800-218/final
 - Title: Building Stateful RAG Workflows using LangGraph
   Vertical: Enterprise Agentic Workflows & Tools
   Category: How-to
   Reference Age: 12
+  Rationale: Standard linear chains cannot handle loops, retries, or user-input interrupts; state-machine graphs are needed.
+  Source Links: https://langchain-ai.github.io/langgraph/, https://www.sciencedirect.com/topics/computer-science/state-machines, https://github.com/langchain-ai/langgraph
 - Title: Algorithmic Bias Auditing in Automated Customer Support Pipelines
   Vertical: AI Governance
   Category: Blog
   Reference Age: 14
+  Rationale: Automated ticket resolution models can develop biases against specific customer segments; continuous sentiment auditing is required.
+  Source Links: https://www.ftc.gov/business-guidance/blog/aiming-truth-fairness-and-equity-your-companys-use-ai, https://www.acm.org/binaries/content/assets/public-policy/ustpc-bias-statement.pdf, https://www.brookings.edu/research/algorithmic-bias-detection-and-mitigation/
