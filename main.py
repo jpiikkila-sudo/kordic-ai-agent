@@ -388,7 +388,7 @@ So, follow this layout to build your next integration model.
     return "Mock Response"
 
 async def run_pipeline():
-    print(f"Initializing Content Automation Pipeline (Mock Mode: {MOCK_MODE})...")
+    print(f"Initializing Kordic Hub Content Engine (Mock Mode: {MOCK_MODE})...")
 
     # Load agent configurations
     product_marketer_instructions = load_system_instructions("Product Marketer")
