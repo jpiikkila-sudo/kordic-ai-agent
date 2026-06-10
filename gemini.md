@@ -188,23 +188,32 @@ Did I successfully remove all words from the Word Blacklist and Adjective Blackl
 Did I ensure the final title is under 5 words and the content is free of obvious AI language?
 
 ## Agent - Publisher
-An automated publishing agent responsible for taking the final approved, polished content items from the Content Editor and managing their insertion and synchronization with the WIX CMS Resource Hub.
+An automated publishing agent responsible for taking the final approved, polished content items from the Content Editor and publishing them on the Wix site.
 
-### Wix CMS Publishing Integration (MCP Tools)
-To publish the finalized content pieces, the agent must interact with the `wix-mcp` server tools using the following sequence:
+### Wix Template Page Duplication (MCP Tools)
+Since the Wix CMS database is not used, you must publish the finalized content pieces by duplicating an existing page template on the Wix site.
+Follow this sequence to clone and populate a static page:
+
 1. **Establish Site Context:**
    * Invoke `ListWixSites` to retrieve the site IDs.
    * Call `ManageWixSite` (or configure the environment) to direct subsequent calls to the target site.
-2. **Verify/Create CMS Collections (Schema Management):**
-   * Use `CallWixSiteAPI` with GET on `/wix-data/v2/collections` to verify the existence of the portfolio database.
-   * If required fields (e.g., `title`, `vertical`, `content`, `category`, `reference_age`) are missing, refer to the **CMS Schema Management** recipe.
-3. **Prevent Duplication (Pre-check Query):**
-   * Before adding any new content item, execute a query using POST on `/wix-data/v2/items/query` to search the target collection for the exact `title`.
-   * If a match is found, skip the insertion to prevent duplicate tiles.
-4. **Upload Media Assets:**
-   * For Agentic Demos, upload the 2-minute video file using `UploadImageToWixSite` or the Import File API to get a static Wix URL before inserting the content item.
-5. **Insert Content as Draft:**
-   * Call `ExecuteWixAPI` or `CallWixSiteAPI` to POST to `/wix-data/v2/items` to insert the final approved item payload into the portfolio collection, setting the `status` field to `DRAFT` (or equivalent status field) to ensure the article is saved as a draft for human review and is not immediately published live to production. Refer to the **CMS Data Items CRUD** recipe for payload formatting.
+
+2. **Locate and Select the Template Page:**
+   * Query the site's pages to find the appropriate template page based on the content category/type. Look for:
+     - `Template: Demo` (for Demos)
+     - `Template: Article` (for How-to articles)
+     - `Template: Whitepaper` (for Whitepapers)
+     - `Template: Solution Guide` (for Solution Guides)
+     - `Template: Blog` (or a blog page for Blogs)
+   * If a perfect template match is not found for the target content format or metadata, use your best judgment to group it with and duplicate the closest matching template.
+
+3. **Duplicate the Template Page:**
+   * Execute the page duplication API call using the Wix MCP tools to clone the selected template page. Set the new page's title and slug based on the polished article title.
+
+4. **Populate the Page Content:**
+   * Update the duplicated page's elements (e.g. text components, headers, buttons) with the finalized content and metadata.
+   * Map the content blocks (executive summaries, step-by-step guides, prerequisites) to the corresponding fields on the duplicated page. If exact mapping labels do not match, use your best judgment to merge or group content into the nearest available page fields.
+   * Ensure the page status is set to unpublished/draft mode for human review.
 
 
 ## Summary

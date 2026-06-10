@@ -1,0 +1,64 @@
+- Title: Developing Custom Model Context Protocol (MCP) Connectors for Atlassian Rovo
+  Vertical: Atlassian system of work and Rovo
+  Category: Guide
+  Reference Age: 2
+- Title: Stateful Multi-Agent Execution of Production Release Protocols
+  Vertical: Enterprise Agentic Workflows & Tools
+  Category: Guide
+  Reference Age: 3
+- Title: Measuring Direct Developer Velocity and ROI post-AI Rollouts
+  Vertical: AI Adoption Trends
+  Category: Blog
+  Reference Age: 3
+- Title: Operationalizing the EU AI Act Risk Mitigation Strategy
+  Vertical: AI Governance
+  Category: Guide
+  Reference Age: 4
+- Title: Auto-Grooming Jira Backlogs with Atlassian Rovo Agents
+  Vertical: Atlassian system of work and Rovo
+  Category: How-to
+  Reference Age: 4
+- Title: Zero-Touch SRE Incident Mitigation via Model Context Protocol Agents
+  Vertical: Enterprise Agentic Workflows & Tools
+  Category: Demo
+  Reference Age: 4
+- Title: High-Performance LLM Routing and Cost Optimization
+  Vertical: AI Adoption Trends
+  Category: Whitepaper
+  Reference Age: 5
+- Title: Implementing Real-Time Vector-Based Content Guardrails
+  Vertical: AI Governance
+  Category: How-to
+  Reference Age: 5
+- Title: Building Stateful Slack & Teams ChatOps with Atlassian Rovo
+  Vertical: Atlassian system of work and Rovo
+  Category: Blog
+  Reference Age: 6
+- Title: Security sandboxing of Autonomous Agents running arbitrary CLI actions
+  Vertical: Enterprise Agentic Workflows & Tools
+  Category: Whitepaper
+  Reference Age: 7
+- Title: Enterprise-Scale RAG Optimization using Graph Hybrid Vector Databases
+  Vertical: AI Adoption Trends
+  Category: How-to
+  Reference Age: 8
+- Title: The Enterprise Taxonomy: Breaking Knowledge Silos with Rovo Search
+  Vertical: Atlassian system of work and Rovo
+  Category: Whitepaper
+  Reference Age: 9
+- Title: Deploying LLMs in Air-Gapped Kubernetes Environments
+  Vertical: AI Adoption Trends
+  Category: Guide
+  Reference Age: 10
+- Title: Auditing Autonomous Multi-Agent Systems for Compliance and Traceability
+  Vertical: AI Governance
+  Category: Whitepaper
+  Reference Age: 11
+- Title: Building Stateful RAG Workflows using LangGraph
+  Vertical: Enterprise Agentic Workflows & Tools
+  Category: How-to
+  Reference Age: 12
+- Title: Algorithmic Bias Auditing in Automated Customer Support Pipelines
+  Vertical: AI Governance
+  Category: Blog
+  Reference Age: 14
