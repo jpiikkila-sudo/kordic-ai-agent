@@ -10,9 +10,9 @@ Below is the complete set of assets and copy ready for live deployment.
 *   **Author:** Kordic
 *   **Primary Category:** AI Governance & Engineering
 *   **Tags:** AI Auditing, Multi-Agent Systems, Compliance, AI SEC, EU AI Act, Cryptographic Verification, Tech Infrastructure
-*   **Cover Image URL:** `blog_cover_tiled`
-*   **System Diagram URL:** `compliance_diagram`
-*   **In-Content Image URL:** `in_content_audit`
+*   **Cover Image URL:** https://static.wixstatic.com/media/6c8a99_c5601a1975be42cc9d44a0ad4455d8c9~mv2.png
+*   **System Diagram URL:** `https://static.wixstatic.com/media/6c8a99_96a1dfb95759470290194e98e0621927~mv2.png`
+*   **In-Content Image URL:** `https://static.wixstatic.com/media/6c8a99_9db084a87111426eac4e20e832b1d518~mv2.png`
 
 ***
 
@@ -73,7 +73,7 @@ If you can't trace it, you don't own it.
 
 ## The Core Concept: Active Tracking and Log Ledgers
 
-![Secure Multi-Agent Validation Process](compliance_diagram)
+![Secure Multi-Agent Validation Process](https://static.wixstatic.com/media/6c8a99_96a1dfb95759470290194e98e0621927~mv2.png)
 
 ### Control the Stream
 We must stop watching events after they happen and move toward **Active Semantic Containment**. Your infrastructure must adopt three hard mechanisms:
@@ -134,7 +134,7 @@ This structural signature pattern allows rapid searching of past system operatio
 ### High-Risk Case: Automated Loan Risk Assessments
 Take a multi-agent system built to evaluate consumer finance requests. The agents pull borrower financial histories, check security profiles, run risk formulas, and confirm or deny applications.
 
-![Real-time Command Terminal Audit](in_content_audit)
+![Real-time Command Terminal Audit](https://static.wixstatic.com/media/6c8a99_9db084a87111426eac4e20e832b1d518~mv2.png)
 
 *   **The Issue:** A loan application gets rejected. The consumer demands an immediate audit of the decision under federal fair lending laws.
 *   **The Solution:** Using the system run ID, compliance leads run the **Audit Retrieval CLI Tool**. Within seconds, they output the exact cryptographic chain of decisions. The visual report shows that the background inquiry agent pulled correct metrics, passed those figures with a sealed signature to the scoring script, and analyzed the numbers using fixed rules checked against live corporate policies. 
