@@ -18,12 +18,28 @@ class TestContentEngine(unittest.TestCase):
             os.remove(db.DB_PATH)
         db.init_db()
 
+        # Create dummy markdown files to avoid FileNotFoundError during import/tests
+        self.mock_how_to_path = "/Users/jessicapiikkila/Documents/kordic-ai-agent/output_articles/How-to/Auto-Groom_Jira_Backlogs.md"
+        self.mock_wp_path = "/Users/jessicapiikkila/Documents/kordic-ai-agent/output_articles/Whitepaper/Enterprise_LLM_Strategy.md"
+        os.makedirs(os.path.dirname(self.mock_how_to_path), exist_ok=True)
+        os.makedirs(os.path.dirname(self.mock_wp_path), exist_ok=True)
+        with open(self.mock_how_to_path, "w") as f:
+            f.write("# Auto-Groom Jira Backlogs\nI have edited and cleaned the entire draft")
+        with open(self.mock_wp_path, "w") as f:
+            f.write("Title: Enterprise LLM Strategy\nSome content here")
+
     def tearDown(self):
         # Clean up test database
         if os.path.exists(db.DB_PATH):
             os.remove(db.DB_PATH)
         # Restore DB_PATH
         db.DB_PATH = self.original_db_path
+        
+        # Clean up mock markdown files
+        if os.path.exists(self.mock_how_to_path):
+            os.remove(self.mock_how_to_path)
+        if os.path.exists(self.mock_wp_path):
+            os.remove(self.mock_wp_path)
 
     def test_database_operations(self):
         # Test default is not duplicate
@@ -132,47 +148,11 @@ class TestContentEngine(unittest.TestCase):
             main.load_system_instructions("Non Existent Agent")
 
     @patch('requests.post')
-    @patch('main.MOCK_MODE', False)
-    @patch.dict(os.environ, {"WIX_API_KEY": "fake-key"})
-    def test_is_wix_duplicate_true(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "draftPosts": [{"id": "post-123", "title": "Test Title"}]
-        }
-        mock_post.return_value = mock_response
-
-        res = main.is_wix_duplicate("Test Title")
-        self.assertTrue(res)
-        
-        # Verify the API was called with correct URL and headers
-        mock_post.assert_called_once()
-        args, kwargs = mock_post.call_args
-        self.assertEqual(args[0], "https://www.wixapis.com/blog/v3/draft-posts/query")
-        self.assertEqual(kwargs["json"]["query"]["filter"]["title"], "Test Title")
-
-    @patch('requests.post')
-    @patch('main.MOCK_MODE', False)
-    @patch.dict(os.environ, {"WIX_API_KEY": "fake-key"})
-    def test_is_wix_duplicate_false(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "draftPosts": []
-        }
-        mock_post.return_value = mock_response
-
-        res = main.is_wix_duplicate("Unique Title")
-        self.assertFalse(res)
-        mock_post.assert_called_once()
-
-    @patch('requests.post')
-    @patch('main.MOCK_MODE', False)
-    @patch.dict(os.environ, {"WIX_API_KEY": ""})
-    def test_is_wix_duplicate_no_api_key(self, mock_post):
-        # Should return False immediately without calling API
-        res = main.is_wix_duplicate("Any Title")
-        self.assertFalse(res)
+    def test_is_wix_duplicate_disabled(self, mock_post):
+        # Should always return False without calling the API
+        self.assertFalse(main.is_wix_duplicate("Test Title"))
+        self.assertFalse(main.is_wix_duplicate("Unique Title"))
+        self.assertFalse(main.is_wix_duplicate("Any Title"))
         mock_post.assert_not_called()
 
     @patch('requests.get')
@@ -260,48 +240,38 @@ class TestContentEngine(unittest.TestCase):
         db.get_all_articles()
         mock_conn.close.assert_called()
 
-    @patch('publish_whitepaper.is_wix_duplicate')
     @patch('publish_whitepaper.Agent')
-    def test_publish_whitepaper_duplicate_skips(self, mock_agent, mock_is_wix_duplicate):
-        mock_is_wix_duplicate.return_value = True
+    def test_publish_whitepaper_no_duplicate_skips(self, mock_agent):
         import publish_whitepaper
         import asyncio
         asyncio.run(publish_whitepaper.publish())
-        mock_agent.assert_not_called()
+        # The agent should be called because duplicate checks are removed
+        mock_agent.assert_called()
 
-    @patch('publish_jira_backlog.is_wix_duplicate')
     @patch('publish_jira_backlog.Agent')
-    def test_publish_jira_backlog_duplicate_skips(self, mock_agent, mock_is_wix_duplicate):
-        mock_is_wix_duplicate.return_value = True
+    def test_publish_jira_backlog_no_duplicate_skips(self, mock_agent):
         import publish_jira_backlog
         import asyncio
         asyncio.run(publish_jira_backlog.publish())
-        mock_agent.assert_not_called()
+        # The agent should be called because duplicate checks are removed
+        mock_agent.assert_called()
 
+    @patch('sys.stdin.isatty', return_value=True)
     @patch('main.is_wix_duplicate')
     @patch('db.is_duplicate')
     @patch('builtins.input', return_value='')
     @patch('main.MOCK_MODE', True)
-    def test_run_pipeline_polished_title_duplicate_skips(self, mock_input, mock_db_is_duplicate, mock_is_wix_duplicate):
-        # Return False on the original titles, and return True only for the polished title "Auto-Groom Jira Backlogs"
-        def side_effect(title):
-            if title == "Auto-Groom Jira Backlogs":
-                return True
-            return False
-        
-        mock_db_is_duplicate.side_effect = side_effect
-        mock_is_wix_duplicate.return_value = False
+    def test_run_pipeline_polished_title_no_duplicate_skips(self, mock_input, mock_db_is_duplicate, mock_is_wix_duplicate, mock_isatty):
+        mock_db_is_duplicate.return_value = True
+        mock_is_wix_duplicate.return_value = True
         
         import asyncio
         with patch('main.db.save_article') as mock_save:
             asyncio.run(main.run_pipeline())
-            # For the topics list:
-            # 1. "Auto-Groom Jira Backlogs" has db.is_duplicate(polished_title)=True -> skipped before save_article
-            # 2. "Enterprise LLM Strategy" (polished to "Enterprise LLM Strategy") has db.is_duplicate = False -> saved!
-            # 3. "Design Custom MCP Connectors" (polished to "Design Custom MCP Connectors") has db.is_duplicate = False -> saved!
-            # So save_article must be called, but not for "Auto-Groom Jira Backlogs".
-            for call in mock_save.call_args_list:
-                self.assertNotEqual(call[0][0], "Auto-Groom Jira Backlogs")
+            # For the topics list: all topics should be processed/saved, none skipped.
+            # So "Auto-Groom Jira Backlogs" must be present in the call arguments.
+            saved_titles = [call[0][0] for call in mock_save.call_args_list]
+            self.assertIn("Auto-Groom Jira Backlogs", saved_titles)
 
     @patch('sys.stdin.isatty', return_value=True)
     @patch('main.is_wix_duplicate', return_value=False)

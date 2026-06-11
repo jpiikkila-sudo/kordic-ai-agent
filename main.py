@@ -10,6 +10,20 @@ from google.antigravity.hooks import hooks
 import google.antigravity.hooks.policy as policy
 import db
 
+def approve_scopes(scopes: list[str]) -> list[policy.Policy]:
+    """
+    Helper that converts a list of scopes into Policy objects using policy.allow,
+    and appends a policy.deny_all() at the end to restrict other tools.
+    """
+    policies = []
+    for scope in scopes:
+        policies.append(policy.allow(scope))
+    policies.append(policy.deny_all())
+    return policies
+
+policy.approve_scopes = approve_scopes
+
+
 # ANSI Color codes for styled output
 class Colors:
     HEADER = '\033[95m'
@@ -128,46 +142,9 @@ def get_publisher_mcp_servers():
 
 def is_wix_duplicate(title: str) -> bool:
     """
-    Checks if a draft post with the same title already exists on the live Wix site
-    by querying POST https://www.wixapis.com/blog/v3/draft-posts/query.
+    Checks if a draft post with the same title already exists on the live Wix site.
+    Disabled: returns False to always create a new blog entry.
     """
-    wix_api_key = os.getenv("WIX_API_KEY", "").strip()
-    wix_site_id = os.getenv("WIX_SITE_ID", "").strip()
-    wix_account_id = os.getenv("WIX_ACCOUNT_ID", "").strip()
-    
-    if not wix_api_key or MOCK_MODE:
-        return False
-        
-    url = "https://www.wixapis.com/blog/v3/draft-posts/query"
-    headers = {
-        "Authorization": wix_api_key,
-        "wix-site-id": wix_site_id,
-        "wix-account-id": wix_account_id,
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "query": {
-            "filter": {
-                "title": title.strip()
-            }
-        }
-    }
-    
-    log_status("🔍 WIX CHECK", f"Querying Wix API for duplicate title: '{title}'...", Colors.CYAN)
-    try:
-        response = requests.post(url, headers=headers, json=payload, timeout=15)
-        if response.status_code == 200:
-            data = response.json()
-            draft_posts = data.get("draftPosts", [])
-            is_dup = len(draft_posts) > 0
-            log_status("✅ WIX SUCCESS", f"Duplicate check completed. Found duplicate: {is_dup}", Colors.GREEN)
-            return is_dup
-        else:
-            log_status("❌ WIX ERROR", f"API query returned status {response.status_code}: {response.text}", Colors.RED)
-    except Exception as e:
-        log_status("❌ WIX ERROR", f"Error querying live Wix Blog API: {e}", Colors.RED)
-        
     return False
 
 if not GEMINI_API_KEY or "your_gemini" in GEMINI_API_KEY:
@@ -403,7 +380,7 @@ async def run_pipeline():
         system_instructions=CustomSystemInstructions(text=product_marketer_instructions),
         capabilities=CapabilitiesConfig(enabled_tools=[]),
         mcp_servers=[],
-        policies=[],
+        policies=policy.approve_scopes([]),
         hooks=agent_hooks
     )
     sme_config = LocalAgentConfig(
@@ -411,7 +388,7 @@ async def run_pipeline():
         system_instructions=CustomSystemInstructions(text=sme_instructions),
         capabilities=CapabilitiesConfig(enabled_tools=[]),
         mcp_servers=[],
-        policies=[],
+        policies=policy.approve_scopes([]),
         hooks=agent_hooks
     )
     editor_config = LocalAgentConfig(
@@ -419,14 +396,14 @@ async def run_pipeline():
         system_instructions=CustomSystemInstructions(text=content_editor_instructions),
         capabilities=CapabilitiesConfig(enabled_tools=[BuiltinTools.GENERATE_IMAGE]),
         mcp_servers=[],
-        policies=[],
+        policies=policy.approve_scopes(["generate_image"]),
         hooks=agent_hooks
     )
     publisher_config = LocalAgentConfig(
         model="gemini-3.5-flash",
         system_instructions=CustomSystemInstructions(text=publisher_instructions),
         mcp_servers=get_publisher_mcp_servers(),
-        policies=[policy.allow_all()],
+        policies=policy.approve_scopes(["wix-mcp/*"]),
         hooks=agent_hooks
     )
 
@@ -438,9 +415,9 @@ async def run_pipeline():
     if os.path.exists(cache_file):
         import time
         file_age_days = (time.time() - os.path.getmtime(cache_file)) / (24 * 3600)
-        if file_age_days < 14:
+        if file_age_days < 13:
             use_cache = True
-            log_status("💾 CACHE LOAD", f"Loading discovered topics from cache '{cache_file}' (Age: {file_age_days:.1f} days, < 14 days old).", Colors.GREEN)
+            log_status("💾 CACHE LOAD", f"Loading discovered topics from cache '{cache_file}' (Age: {file_age_days:.1f} days, < 13 days old).", Colors.GREEN)
             try:
                 with open(cache_file, "r") as f:
                     pm_output = f.read()
@@ -513,16 +490,7 @@ async def run_pipeline():
         
         log_status("⚡ RUNNING", f"Phase 2: Technical SME detailing architecture for '{title}'...", Colors.GREEN)
         
-        # Step 2a: Check for duplication in the local database and live Wix site
-        if db.is_duplicate(title):
-            log_status("⚠️ SKIP", f"Title '{title}' already exists in the local database. Skipping to prevent duplicates.", Colors.YELLOW)
-            continue
-            
-        if is_wix_duplicate(title):
-            log_status("⚠️ SKIP", f"Title '{title}' already exists on the live Wix site. Skipping to prevent duplicates.", Colors.YELLOW)
-            continue
-            
-        log_status("✅ UNIQUE", f"Title '{title}' is unique. Generating content...", Colors.GREEN)
+        log_status("✅ PROCESSING", f"Processing topic '{title}'...", Colors.GREEN)
 
         # Step 2b: Technical SME generates draft
         try:
@@ -651,14 +619,7 @@ async def run_pipeline():
         if title_match:
             polished_title = title_match.group(1).strip()
             
-        # Step 2c-1: Check duplicate bypass for polished title
-        if db.is_duplicate(polished_title):
-            log_status("⚠️ SKIP", f"Polished title '{polished_title}' already exists in the local database. Skipping to prevent duplicates.", Colors.YELLOW)
-            continue
- 
-        if is_wix_duplicate(polished_title):
-            log_status("⚠️ SKIP", f"Polished title '{polished_title}' already exists on the live Wix site. Skipping to prevent duplicates.", Colors.YELLOW)
-            continue
+
  
         # Print the content directly to the screen
         print(f"\n--------------------------------------------------")
@@ -668,10 +629,17 @@ async def run_pipeline():
         print(f"--------------------------------------------------\n")
             
         # Step 2d: Save to local database (Status: Draft/Unpublished)
+        conn = db.get_connection()
+        try:
+            with conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM articles WHERE title = ?", (polished_title.strip(),))
+        except Exception as e:
+            log_status("⚠️ DB WARN", f"Failed to clean old record: {e}", Colors.YELLOW)
+        finally:
+            conn.close()
+
         save_res = db.save_article(polished_title, vertical, editor_output, category, ref_age)
-        if save_res == -1:
-            log_status("⚠️ SKIP", f"Polished title '{polished_title}' is duplicate in local database. Skipping to prevent duplicates.", Colors.YELLOW)
-            continue
         log_status("💾 LOCAL DB", f"Saved polished article '{polished_title}' locally.", Colors.GREEN)
 
         # Step 2e: Save locally to output_articles/ directory in Markdown format
@@ -706,14 +674,13 @@ async def run_pipeline():
                     prompt_text = (
                         f"Please publish the article '{polished_title}' (Category: '{category}') to the Wix Blog by performing these actions:\n"
                         f"1. Query site members using GET https://www.wixapis.com/members/v1/members?fieldsets=PUBLIC&paging.limit=1 to obtain a valid memberId.\n"
-                        f"2. Check again for title duplicates on the Wix site using the MCP tool (querying draft posts) to prevent duplicate posts.\n"
-                        f"3. Retrieve the site's blog categories using GET https://www.wixapis.com/blog/v3/categories. "
+                        f"2. Retrieve the site's blog categories using GET https://www.wixapis.com/blog/v3/categories. "
                         f"If a category with the title/name '{vertical}' exists, retrieve its ID. "
                         f"If not, create a new category using POST https://www.wixapis.com/blog/v3/categories with the title and label set to '{vertical}', and get its ID.\n"
-                        f"4. Convert this article's markdown content to Wix Ricos Rich Content format. Crucially, nest all text nodes inside PARAGRAPH nodes (even within list items, blockquotes, etc.), and use correct HEADING, BULLETED_LIST, or ORDERED_LIST structures. If there are external media/image URLs, download a local copy of each, convert it to base64, call the `UploadImageToWixSite` tool with `imageBase64`, `mimeType`, and `siteId` to upload it into the Media Manager, and use the returned media ID/wixstatic URL in the post instead of the external URL.\n"
-                        f"5. Handle tags using the tags workflow: check if each of the 3 generated tags exists via GET https://www.wixapis.com/blog/v3/tags. If a tag is missing, create it using POST https://www.wixapis.com/blog/v3/tags and retrieve its GUID id. Create the draft post using POST https://www.wixapis.com/blog/v3/draft-posts with 'publish': false, the retrieved memberId, the vertical category ID under categoryIds, the retrieved tag IDs in the 'tagIds' list, and the 3 tag labels in the 'hashtags' list.\n"
-                        f"6. Print detailed verbose logs of all API calls, payloads, status codes, and any errors encountered.\n"
-                        f"7. Return the created Wix draft post ID in a format like 'wix-item-<id>' or 'Wix Draft Post ID: <id>'.\n\n"
+                        f"3. Convert this article's markdown content to Wix Ricos Rich Content format. Crucially, nest all text nodes inside PARAGRAPH nodes (even within list items, blockquotes, etc.), and use correct HEADING, BULLETED_LIST, or ORDERED_LIST structures. If there are external media/image URLs, download a local copy of each, convert it to base64, call the `UploadImageToWixSite` tool with `imageBase64`, `mimeType`, and `siteId` to upload it into the Media Manager, and use the returned media ID/wixstatic URL in the post instead of the external URL.\n"
+                        f"4. Handle tags using the tags workflow: check if each of the 3 generated tags exists via GET https://www.wixapis.com/blog/v3/tags. If a tag is missing, create it using POST https://www.wixapis.com/blog/v3/tags by passing a raw JSON body with a top-level label field directly (e.g. `{{\"label\": \"Tag Label\"}}` - DO NOT wrap it inside a `\"tag\"` object) and retrieve its GUID id. Create the draft post using POST https://www.wixapis.com/blog/v3/draft-posts with 'publish': false, the retrieved memberId, the vertical category ID under categoryIds, the retrieved tag IDs in the 'tagIds' list, and the 3 tag labels in the 'hashtags' list.\n"
+                        f"5. Print detailed verbose logs of all API calls, payloads, status codes, and any errors encountered.\n"
+                        f"6. Return the created Wix draft post ID in a format like 'wix-item-<id>' or 'Wix Draft Post ID: <id>'.\n\n"
                         f"Content to publish:\n{editor_output}"
                     )
                     publisher_response = await publisher_agent.chat(prompt_text)
@@ -748,5 +715,21 @@ async def run_pipeline():
         print(f"- [{art['category']}] {art['title']} | Reference Age: {art['reference_age']} days | {publish_status}{file_info}")
     print("==================================================")
 
+async def run_scheduler():
+    log_status("⏰ DAEMON", "Starting Kordic Content Engine Daemon on a 14-day schedule...", Colors.GREEN)
+    while True:
+        log_status("⚡ RUNNING", "Executing scheduled content automation pipeline run...", Colors.GREEN)
+        try:
+            await run_pipeline()
+        except Exception as e:
+            log_status("❌ ERROR", f"Pipeline execution failed in schedule loop: {e}", Colors.RED)
+        
+        log_status("⏰ SLEEP", "Sleeping for 14 days until the next scheduled topic refresh...", Colors.BLUE)
+        await asyncio.sleep(14 * 24 * 3600)
+
 if __name__ == "__main__":
-    asyncio.run(run_pipeline())
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] in ["--schedule", "--daemon"]:
+        asyncio.run(run_scheduler())
+    else:
+        asyncio.run(run_pipeline())

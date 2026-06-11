@@ -276,7 +276,7 @@ Follow this sequence to create and populate a draft blog post:
 5. **Create Draft Post with Tags:**
    * Generate exactly 3 relevant keyword tags (e.g. `["AI", "Governance", "Security"]` or similar topics) based on the content.
    * **Query/Check existing tags:** Call `GET https://www.wixapis.com/blog/v3/tags` (or query tags by label) to check if each tag exists.
-   * **Create if missing:** If a tag does not exist, invoke `POST https://www.wixapis.com/blog/v3/tags` with the label to create it and retrieve its unique GUID `id`.
+   * **Create if missing:** If a tag does not exist, invoke `POST https://www.wixapis.com/blog/v3/tags` passing a flat JSON payload with the label directly (e.g. `{"label": "<tag_label>"}` - DO NOT wrap it in a `"tag"` object), then retrieve its unique GUID `id`.
    * **Pass the IDs:** Include the retrieved GUIDs in the `tagIds` array of the `POST https://www.wixapis.com/blog/v3/draft-posts` body instead of (or in addition to) `hashtags`.
    * Call `POST https://www.wixapis.com/blog/v3/draft-posts` with a request body in this shape:
      ```json
@@ -301,7 +301,7 @@ Follow this sequence to create and populate a draft blog post:
 
 ## Summary
 
-Build a multi-agent Content Engine that automates the discovery, creation, and publishing of authoritative content for the Resource Hub. The system coordinates four specialized agents: a Product Marketer to find and source topics, a Technical SME to write detailed implementation content, a Content Editor to enforce the gritty, jargon-free Kordic brand voice, and a Publisher to manage the Wix Blog integration and prevent duplicate entries.
+Build a multi-agent Content Engine that automates the discovery, creation, and publishing of authoritative content for the Resource Hub. The system coordinates four specialized agents: a Product Marketer to find and source topics, a Technical SME to write detailed implementation content, a Content Editor to enforce the gritty, jargon-free Kordic brand voice, and a Publisher to manage the Wix Blog integration.
 
-The engine must store all data locally, prevent duplicate blog post titles from being generated on the Wix site, and group/prioritize the final Resource Hub articles based on category type and resource freshness (age of references).
+The engine must store all data locally and group/prioritize the final Resource Hub articles based on category type and resource freshness (age of references).
 

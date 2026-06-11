@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 .DS_Store
+.env
+kordic.db
+test_kordic.db
+test.log

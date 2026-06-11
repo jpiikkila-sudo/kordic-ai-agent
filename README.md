@@ -19,35 +19,28 @@ graph TD
 ```
 
 1. **Product Marketer Agent**: Scans search trends and prioritizes key industry topics based on keyword volume and target persona friction. Caches discovered topics locally for 14 days to optimize performance.
-2. **Technical Subject Matter Expert (SME) Agent**: Drafts detailed, factual implementation blueprints (e.g., architecture charts, prerequisites, steps, payload specs). Integrates an interactive command loop allowing humans to refine the technical drafts before hand-off.
-3. **Content Editor Agent**: Rewrites the summary/editorial copy to match Kordic's authentic, gritty tone. Enforces stylistic constraints (word count, word/adjective blacklists, 8th-grade readability context, and image layouts).
-4. **Publisher Agent**: Converts the polished markdown into Wix's structured **Ricos Rich Content** format, automatically checks for duplicates on the live Wix site, imports external images into the Wix Media Manager, and uploads draft posts.
+2. **Technical Subject Matter Expert (SME) Agent**: Drafts detailed, factual implementation blueprints. Integrates an interactive command loop allowing humans to refine the technical drafts before hand-off.
+3. **Content Editor Agent**: Rewrites the copy to match Kordic's authentic, gritty tone. Enforces stylistic constraints (word count, word/adjective blacklists, 8th-grade readability context, and image layouts).
+4. **Publisher Agent**: Converts polished markdown into Wix's structured **Ricos Rich Content** format, automatically checks for duplicates on the live Wix site, imports external images into the Wix Media Manager, and uploads draft posts.
+
+For a detailed view of the system components and state transitions, see the full [Architecture Walkthrough (architecture_diagram.md)](file:///Users/jessicapiikkila/Documents/kordic-ai-agent/architecture_diagram.md).
 
 ---
 
-## 🛠️ Key Features
-
-* **Wix Blog Integration via MCP**: Employs standard Wix Blog API methods (`ListWixSites`, `ManageWixSite`, `UploadImageToWixSite`, `draft-posts`) for automated publishing.
-* **Automatic Media Processing**: The Publisher Agent downloads external assets locally, encodes them to base64, and imports them to the Wix Media Manager, ensuring zero broken image links on your live blog.
-* **Visual Execution Logging**: Features full CLI color-coded tracking to provide real-time status updates:
-  * `[⚡ RUNNING]` Phase entry and execution checkpoints.
-  * `[🤖 GEMINI API]`/`[⏳ WAITING]` Live Google Gemini model calls and network activity.
-  * `[⚙️ MCP TOOL]` Active tool invocation and payload details.
-  * `[❌ ERROR]` Visual error tracking and exception traceback.
-* **Local Database & Cache Management**: Uses SQLite to track all generated posts, preventing duplicate uploads and maintaining a chronological history sorted by freshness.
-
----
-
-## ⚙️ Setup & Installation
+## ⚙️ Prerequisites & Setup
 
 ### 1. Requirements
-Ensure you have Python 3.10+ installed. Install the required dependencies:
+- **Python 3.10+**
+- **pip** package manager
+
+### 2. Install Dependencies
+Install the required packages:
 ```bash
 pip install requests python-dotenv
 ```
 *(Note: Ensure the `google-antigravity` package is installed and configured in your Python environment).*
 
-### 2. Configuration (`.env`)
+### 3. Environment Configuration (`.env`)
 Create a `.env` file in the root directory:
 ```env
 # Google Gemini API key
@@ -65,17 +58,31 @@ WIX_API_KEY=your_wix_api_key
 CREATOR_EMAIL=jpiikkila@kordic.ai
 ```
 
-### 3. Running the Pipeline
-Run the main script directly from your terminal:
+---
+
+## 🚀 Quickstart Commands
+
+### Run the Pipeline locally
+To start the pipeline and interact with the agents:
 ```bash
 python3 main.py
 ```
+This runs the full end-to-end multi-agent orchestration, starting with topic selection and proceeding through content drafting, editing, and Wix publishing.
 
----
-
-## 🧪 Verification & Testing
-To run the pipeline verification tests:
+### Run Pipeline Verification Tests
+To run the automated verification test suite:
 ```bash
 python3 test_pipeline.py
 ```
-This runs validation checks to ensure instructions are loaded, drafts are parsed, duplicates are correctly handled, and Ricos schemas format correctly.
+This runs 14 test cases to validate database logic, topic parsing, Wix duplicate prevention mechanisms, and mock execution loops.
+
+---
+
+## 🔒 Security & Declarative Authorization
+
+The content engine implements a **Declarative Authorization System** to govern tool executions. Each agent configuration declares its minimum tool scopes:
+- **Product Marketer & SME**: `policy.approve_scopes([])` (no tools permitted).
+- **Content Editor**: `policy.approve_scopes(["generate_image"])` (only allowed to run `generate_image`).
+- **Publisher**: `policy.approve_scopes(["wix-mcp/*"])` (only allowed to run Wix-related MCP tools).
+
+This prevents rogue execution or privilege escalation while enabling fully autonomous backend tasks. All interactive content checkpoints remain under human command.

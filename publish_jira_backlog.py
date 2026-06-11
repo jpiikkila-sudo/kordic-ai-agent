@@ -98,10 +98,7 @@ print("Start of content:", article_content[:150])
 async def publish():
     print("\n--- Publishing 'Auto-Groom Jira Backlogs' via Wix Publisher Agent ---")
     
-    # Check if duplicate exists on live Wix site before publishing
-    if is_wix_duplicate(title):
-        print(f"  [Skip] Title '{title}' already exists on the live Wix site. Skipping publishing.")
-        return
+
         
     # Check if we are running in MOCK mode or live
     MOCK_MODE = os.getenv("MOCK_MODE", "false").lower() == "true"
@@ -160,8 +157,7 @@ async def publish():
                 prompt_text = (
                     f"Please publish the article '{title}' (Category: '{category}') to the Wix Blog by performing these actions:\n"
                     f"1. Query site members using GET https://www.wixapis.com/members/v1/members?fieldsets=PUBLIC&paging.limit=1 to obtain a valid memberId.\n"
-                    f"2. Check again for title duplicates on the Wix site using the MCP tool (querying draft posts) to prevent duplicate posts.\n"
-                    f"3. Retrieve the site's blog categories using GET https://www.wixapis.com/blog/v3/categories. "
+                    f"2. Retrieve the site's blog categories using GET https://www.wixapis.com/blog/v3/categories. "
                     f"If a category with the title/name '{vertical}' exists, retrieve its ID. "
                     f"If not, create a new category using POST https://www.wixapis.com/blog/v3/categories with the title and label set to '{vertical}', and get its ID.\n"
                     f"4. Convert this article's markdown content to Wix Ricos Rich Content format. Crucially, nest all text nodes inside PARAGRAPH nodes (even within list items, blockquotes, etc.), and use correct HEADING, BULLETED_LIST, or ORDERED_LIST structures.\n"
