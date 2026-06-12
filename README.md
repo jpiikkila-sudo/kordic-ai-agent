@@ -60,27 +60,34 @@ CREATOR_EMAIL=jpiikkila@kordic.ai
 
 ---
 
-## 🚀 Quickstart Commands
+## 🚀 Quickstart & Testing Guide
 
-### Run the Pipeline locally
-To start the pipeline and interact with the agents:
-```bash
-python3 main.py
-```
-This runs the full end-to-end multi-agent orchestration, starting with topic selection and proceeding through content drafting, editing, and Wix publishing.
+### 1. Zero-Configuration Local Testing (Mock Mode)
+To run the entire multi-agent pipeline offline without requiring live Gemini API keys or Wix credentials:
+1. Ensure `MOCK_MODE=true` is set in your `.env` file (or keep the `GEMINI_API_KEY` unset/default, which automatically triggers mock mode).
+2. Start the interactive pipeline:
+   ```bash
+   python3 main.py
+   ```
+3. The engine will load topics, prompt you for selection, run interactive revision loops for the SME/Editor agents (where you can type feedback or press Enter/Transition commands), and simulate Wix publishing.
 
-### Publish Compliance Whitepaper Standalone
-To publish the auditing compliance whitepaper directly:
+### 2. Standalone Publishing Run
+To run standalone publishing scripts directly (e.g. for the auditing compliance whitepaper):
 ```bash
 python3 publish_compliance_whitepaper.py
 ```
+*(Note: These scripts run in mock mode if `MOCK_MODE=true` or if API keys are missing).*
 
-### Run Pipeline Verification Tests
-To run the automated verification test suite:
+### 3. Run the Automated Test Suite
+To run the full suite of unit tests verifying database logic, topic parsing, non-skipping duplication policies, and pipeline loops:
+```bash
+python3 -m unittest test_pipeline.py
+```
+or:
 ```bash
 python3 test_pipeline.py
 ```
-This runs 12 test cases to validate database logic, topic parsing, non-skipping duplicate behaviors, and mock execution loops.
+All 12 tests are mocked to execute safely and clean up their temporary database files (`test_kordic.db`) afterwards.
 
 ---
 
