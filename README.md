@@ -21,7 +21,7 @@ graph TD
 1. **Product Marketer Agent**: Scans search trends and prioritizes key industry topics based on keyword volume and target persona friction. Caches discovered topics locally for 14 days to optimize performance.
 2. **Technical Subject Matter Expert (SME) Agent**: Drafts detailed, factual implementation blueprints. Integrates an interactive command loop allowing humans to refine the technical drafts before hand-off.
 3. **Content Editor Agent**: Rewrites the copy to match Kordic's authentic, gritty tone. Enforces stylistic constraints (word count, word/adjective blacklists, 8th-grade readability context, and image layouts).
-4. **Publisher Agent**: Converts polished markdown into Wix's structured **Ricos Rich Content** format, automatically checks for duplicates on the live Wix site, imports external images into the Wix Media Manager, and uploads draft posts.
+4. **Publisher Agent**: Converts polished markdown into Wix's structured **Ricos Rich Content** format, imports external images into the Wix Media Manager, and uploads draft posts directly without duplicate blocks or page templates.
 
 For a detailed view of the system components and state transitions, see the full [Architecture Walkthrough (architecture_diagram.md)](file:///Users/jessicapiikkila/Documents/kordic-ai-agent/architecture_diagram.md).
 
@@ -69,12 +69,18 @@ python3 main.py
 ```
 This runs the full end-to-end multi-agent orchestration, starting with topic selection and proceeding through content drafting, editing, and Wix publishing.
 
+### Publish Compliance Whitepaper Standalone
+To publish the auditing compliance whitepaper directly:
+```bash
+python3 publish_compliance_whitepaper.py
+```
+
 ### Run Pipeline Verification Tests
 To run the automated verification test suite:
 ```bash
 python3 test_pipeline.py
 ```
-This runs 14 test cases to validate database logic, topic parsing, Wix duplicate prevention mechanisms, and mock execution loops.
+This runs 12 test cases to validate database logic, topic parsing, non-skipping duplicate behaviors, and mock execution loops.
 
 ---
 
