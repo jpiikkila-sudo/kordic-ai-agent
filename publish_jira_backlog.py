@@ -67,36 +67,34 @@ def get_publisher_mcp_servers():
 
 from main import is_wix_duplicate
 
-# Read the content directly from the output markdown file
+# Target filepath
 md_path = "/Users/jessicapiikkila/Documents/kordic-ai-agent/output_articles/How-to/Auto-Groom_Jira_Backlogs.md"
-with open(md_path, "r") as f:
-    full_text = f.read()
-
-# We need to extract the portion requested by the user, which is the entire text from line 9 onwards,
-# or we can just use the exact content. Since the file starts with:
-# # Auto-Groom Jira Backlogs
-# **Vertical:** Atlassian system of work and Rovo agents
-# **Category:** How-to
-# **Reference Age:** 4 days
-# ---
-# Let's extract everything from "I have edited and cleaned..."
-start_marker = "I have edited and cleaned the entire draft"
-start_idx = full_text.find(start_marker)
-if start_idx != -1:
-    article_content = full_text[start_idx:]
-else:
-    article_content = full_text
 
 title = "Auto-Groom Jira Backlogs"
 category = "How-to"
 vertical = "Atlassian system of work and Rovo agents"
 ref_age = 4
 
-print("Loaded content length:", len(article_content))
-print("Start of content:", article_content[:150])
-
 async def publish():
     print("\n--- Publishing 'Auto-Groom Jira Backlogs' via Wix Publisher Agent ---")
+    
+    if not os.path.exists(md_path):
+        print(f"Error: Target file not found at {md_path}. Cannot publish '{title}'.")
+        return
+        
+    with open(md_path, "r") as f:
+        full_text = f.read()
+
+    # Let's extract everything from "I have edited and cleaned..."
+    start_marker = "I have edited and cleaned the entire draft"
+    start_idx = full_text.find(start_marker)
+    if start_idx != -1:
+        article_content = full_text[start_idx:]
+    else:
+        article_content = full_text
+
+    print("Loaded content length:", len(article_content))
+    print("Start of content:", article_content[:150])
     
 
         

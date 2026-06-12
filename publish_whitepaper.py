@@ -70,29 +70,32 @@ from main import is_wix_duplicate
 # Target filepath for the whitepaper
 md_path = "/Users/jessicapiikkila/Documents/kordic-ai-agent/output_articles/Whitepaper/Enterprise_LLM_Strategy.md"
 
-# Read the content directly from this markdown file
-with open(md_path, "r") as f:
-    full_text = f.read()
-
-# Extract everything from "Title: Enterprise LLM Strategy"
-start_marker = "Title: Enterprise LLM Strategy"
-start_idx = full_text.find(start_marker)
-if start_idx != -1:
-    article_content = full_text[start_idx:]
-else:
-    article_content = full_text
-
 # Define parameters
 title = "Enterprise LLM Strategy"
 category = "Whitepaper"
 vertical = "AI Adoption Trends"
 ref_age = 10
 
-print("Loaded content length:", len(article_content))
-print("Start of content:", article_content[:150])
-
 async def publish():
     print(f"\n--- Publishing '{title}' via Wix Publisher Agent ---")
+    
+    if not os.path.exists(md_path):
+        print(f"Error: Target file not found at {md_path}. Cannot publish '{title}'.")
+        return
+        
+    with open(md_path, "r") as f:
+        full_text = f.read()
+
+    # Extract everything from "Title: Enterprise LLM Strategy"
+    start_marker = "Title: Enterprise LLM Strategy"
+    start_idx = full_text.find(start_marker)
+    if start_idx != -1:
+        article_content = full_text[start_idx:]
+    else:
+        article_content = full_text
+
+    print("Loaded content length:", len(article_content))
+    print("Start of content:", article_content[:150])
     
 
         

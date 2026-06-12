@@ -146,6 +146,10 @@ def get_or_create_category(vertical_name):
 
 def publish_post(uploaded_images):
     md_path = "/Users/jessicapiikkila/Documents/kordic-ai-agent/output_articles/Whitepaper/Auditing_Autonomous_Multi-Agent_Systems_for_Compliance_and_Traceability.md"
+    if not os.path.exists(md_path):
+        print(f"Error: Target file not found at {md_path}. Cannot publish post.")
+        return
+        
     with open(md_path, "r") as f:
         content = f.read()
         
