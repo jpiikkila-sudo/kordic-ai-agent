@@ -835,7 +835,14 @@ async def run_pipeline():
         except Exception as e:
             log_status("❌ ERROR", f"Exception during Content Editor polishing for '{title}': {e}. Skipping.", Colors.RED)
             continue
-                
+        
+        # Parse publisher instructions block if provided by the Content Editor
+        publisher_notes = ""
+        instr_match = re.search(r"\[PUBLISHER_INSTRUCTIONS\](.*?)\[/PUBLISHER_INSTRUCTIONS\]", editor_output, re.DOTALL | re.IGNORECASE)
+        if instr_match:
+            publisher_notes = instr_match.group(1).strip()
+            editor_output = editor_output.replace(instr_match.group(0), "").strip()
+
         # Parse the polished title from the Editor output (usually starts with "Title: ...")
         polished_title = title
         title_match = re.search(r"Title:\s*(.*?)\n", editor_output, re.IGNORECASE)
@@ -877,14 +884,14 @@ async def run_pipeline():
         
         with open(local_file_path, "w") as f:
             f.write(editor_output)
-        log_status("💾 LOCAL FILE", f"Saved formatted article locally at: {local_file_path}", Colors.GREEN)
+        log_status("💾 LOCAL FILE", f"Saved formatted article locally at: file://{os.path.abspath(local_file_path)}", Colors.GREEN)
 
         # Generate and save HTML preview
         html_content = convert_markdown_to_styled_html(polished_title, editor_output)
         html_file_path = local_file_path.replace(".md", ".html")
         with open(html_file_path, "w") as f:
             f.write(html_content)
-        log_status("💾 HTML PREVIEW", f"Saved styled HTML preview at: {html_file_path}", Colors.GREEN)
+        log_status("💾 HTML PREVIEW", f"Saved styled HTML preview at: file://{os.path.abspath(html_file_path)}", Colors.GREEN)
 
         # Step 2f: Publisher posts to Wix (or gets mock publish ID)
         log_status("⚡ RUNNING", f"Phase 4: Publisher sending '{polished_title}' to Wix CMS...", Colors.GREEN)
@@ -901,6 +908,10 @@ async def run_pipeline():
             try:
                 # Connect the publisher agent to the Wix MCP server
                 async with Agent(publisher_config) as publisher_agent:
+                    custom_instructions_clause = ""
+                    if publisher_notes:
+                        custom_instructions_clause = f"\nCustom layout and image instructions from the Content Editor agent:\n{publisher_notes}\n"
+
                     prompt_text = (
                         f"Please publish the article '{polished_title}' (Category: '{category}') to the Wix Blog by performing these actions:\n"
                         f"1. Query site members using GET https://www.wixapis.com/members/v1/members?fieldsets=PUBLIC&paging.limit=1 to obtain a valid memberId.\n"
@@ -909,6 +920,7 @@ async def run_pipeline():
                         f"If not, create a new category using POST https://www.wixapis.com/blog/v3/categories with the title and label set to '{vertical}', and get its ID.\n"
                         f"3. Convert this article's markdown content to Wix Ricos Rich Content format. Crucially, nest all text nodes inside PARAGRAPH nodes (even within list items, blockquotes, etc.), and use correct HEADING, BULLETED_LIST, or ORDERED_LIST structures. If there are external media/image URLs, download a local copy of each, convert it to base64, call the `UploadImageToWixSite` tool with `imageBase64`, `mimeType`, and `siteId` to upload it into the Media Manager, and use the returned media ID/wixstatic URL in the post instead of the external URL.\n"
                         f"4. Handle tags using the tags workflow: check if each of the 3 generated tags exists via GET https://www.wixapis.com/blog/v3/tags. If a tag is missing, create it using POST https://www.wixapis.com/blog/v3/tags by passing a raw JSON body with a top-level label field directly (e.g. `{{\"label\": \"Tag Label\"}}` - DO NOT wrap it inside a `\"tag\"` object) and retrieve its GUID id. Create the draft post using POST https://www.wixapis.com/blog/v3/draft-posts with 'publish': false, the retrieved memberId, the vertical category ID under categoryIds, the retrieved tag IDs in the 'tagIds' list, and the 3 tag labels in the 'hashtags' list.\n"
+                        f"{custom_instructions_clause}"
                         f"5. Print detailed verbose logs of all API calls, payloads, status codes, and any errors encountered.\n"
                         f"6. Return the created Wix draft post ID in a format like 'wix-item-<id>' or 'Wix Draft Post ID: <id>'.\n\n"
                         f"Content to publish:\n{editor_output}"
