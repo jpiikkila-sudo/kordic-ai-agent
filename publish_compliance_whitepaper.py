@@ -123,7 +123,9 @@ def get_or_create_category(vertical_name):
     res = requests.get(cat_url, headers=headers)
     if res.status_code == 200:
         for c in res.json().get("categories", []):
-            if c.get("title", "").strip().lower() == vertical_name.strip().lower():
+            title_match = c.get("title", "").strip().lower() == vertical_name.strip().lower()
+            label_match = c.get("label", "").strip().lower() == vertical_name.strip().lower()
+            if title_match or label_match:
                 print(f"Category '{vertical_name}' already exists with ID: {c['id']}")
                 return c["id"]
                 

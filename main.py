@@ -675,7 +675,7 @@ async def run_pipeline():
                         f"Please publish the article '{polished_title}' (Category: '{category}') to the Wix Blog by performing these actions:\n"
                         f"1. Query site members using GET https://www.wixapis.com/members/v1/members?fieldsets=PUBLIC&paging.limit=1 to obtain a valid memberId.\n"
                         f"2. Retrieve the site's blog categories using GET https://www.wixapis.com/blog/v3/categories. "
-                        f"If a category with the title/name '{vertical}' exists, retrieve its ID. "
+                        f"If a category with the title or label matching '{vertical}' exists, retrieve its ID. "
                         f"If not, create a new category using POST https://www.wixapis.com/blog/v3/categories with the title and label set to '{vertical}', and get its ID.\n"
                         f"3. Convert this article's markdown content to Wix Ricos Rich Content format. Crucially, nest all text nodes inside PARAGRAPH nodes (even within list items, blockquotes, etc.), and use correct HEADING, BULLETED_LIST, or ORDERED_LIST structures. If there are external media/image URLs, download a local copy of each, convert it to base64, call the `UploadImageToWixSite` tool with `imageBase64`, `mimeType`, and `siteId` to upload it into the Media Manager, and use the returned media ID/wixstatic URL in the post instead of the external URL.\n"
                         f"4. Handle tags using the tags workflow: check if each of the 3 generated tags exists via GET https://www.wixapis.com/blog/v3/tags. If a tag is missing, create it using POST https://www.wixapis.com/blog/v3/tags by passing a raw JSON body with a top-level label field directly (e.g. `{{\"label\": \"Tag Label\"}}` - DO NOT wrap it inside a `\"tag\"` object) and retrieve its GUID id. Create the draft post using POST https://www.wixapis.com/blog/v3/draft-posts with 'publish': false, the retrieved memberId, the vertical category ID under categoryIds, the retrieved tag IDs in the 'tagIds' list, and the 3 tag labels in the 'hashtags' list.\n"
@@ -695,8 +695,16 @@ async def run_pipeline():
                     if wix_id_match:
                         wix_item_id = wix_id_match.group(0)
                     else:
-                        uuid_match = re.search(r"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}", publisher_output)
-                        wix_item_id = f"wix-item-{uuid_match.group(0)}" if uuid_match else "unknown-wix-id"
+                        wix_site_id = os.getenv("WIX_SITE_ID", "").strip()
+                        uuids = re.findall(r"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}", publisher_output)
+                        post_uuid = None
+                        for u in uuids:
+                            if u != wix_site_id:
+                                post_uuid = u
+                                break
+                        if not post_uuid and uuids:
+                            post_uuid = uuids[0]
+                        wix_item_id = f"wix-item-{post_uuid}" if post_uuid else "unknown-wix-id"
             except Exception as e:
                 log_status("⚠️ WIX WARN", f"Live Wix publishing failed: {e}. Falling back to local draft registration.", Colors.YELLOW)
                 wix_item_id = "wix-item-mock-failed-live"

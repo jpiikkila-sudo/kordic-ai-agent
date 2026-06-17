@@ -166,7 +166,7 @@ async def publish():
                     f"Please publish the article '{title}' (Category: '{category}') to the Wix Blog by performing these actions:\n"
                     f"1. Query site members using GET https://www.wixapis.com/members/v1/members?fieldsets=PUBLIC&paging.limit=1 to obtain a valid memberId.\n"
                     f"2. Retrieve the site's blog categories using GET https://www.wixapis.com/blog/v3/categories. "
-                    f"If a category with the title/name '{vertical}' exists, retrieve its ID. "
+                    f"If a category with the title or label matching '{vertical}' exists, retrieve its ID. "
                     f"If not, create a new category using POST https://www.wixapis.com/blog/v3/categories with the title and label set to '{vertical}', and get its ID.\n"
                     f"4. Convert this article's markdown content to Wix Ricos Rich Content format. Crucially, nest all text nodes inside PARAGRAPH nodes (even within list items, blockquotes, etc.), and use correct HEADING, BULLETED_LIST, or ORDERED_LIST structures.\n"
                     f"5. Create the draft post using POST https://www.wixapis.com/blog/v3/draft-posts with 'publish': false, the retrieved memberId, "
@@ -186,8 +186,16 @@ async def publish():
                 if wix_id_match:
                     wix_item_id = wix_id_match.group(0)
                 else:
-                    uuid_match = re.search(r"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}", publisher_output)
-                    wix_item_id = f"wix-item-{uuid_match.group(0)}" if uuid_match else "unknown-wix-page-id"
+                    wix_site_id = os.getenv("WIX_SITE_ID", "").strip()
+                    uuids = re.findall(r"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}", publisher_output)
+                    post_uuid = None
+                    for u in uuids:
+                        if u != wix_site_id:
+                            post_uuid = u
+                            break
+                    if not post_uuid and uuids:
+                        post_uuid = uuids[0]
+                    wix_item_id = f"wix-item-{post_uuid}" if post_uuid else "unknown-wix-page-id"
                 print(f"Extracted Wix Page ID: {wix_item_id}")
         except Exception as e:
             print(f"Live Wix publishing failed: {e}")
