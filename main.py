@@ -151,6 +151,51 @@ if not GEMINI_API_KEY or "your_gemini" in GEMINI_API_KEY:
     print("No valid GEMINI_API_KEY found. Running in MOCK MODE for pipeline testing.")
     MOCK_MODE = True
 
+def load_historical_feedback() -> str:
+    """
+    Scans the system generated logs across all conversations in the brain directory
+    to extract historical styling and editorial feedback provided by the human user.
+    """
+    brain_dir = "/Users/jessicapiikkila/.gemini/antigravity-ide/brain"
+    feedback_collected = []
+    if not os.path.exists(brain_dir):
+        return ""
+        
+    try:
+        for conv_id in os.listdir(brain_dir):
+            conv_path = os.path.join(brain_dir, conv_id)
+            if not os.path.isdir(conv_path):
+                continue
+            
+            log_file = os.path.join(conv_path, ".system_generated", "logs", "transcript.jsonl")
+            if not os.path.exists(log_file):
+                continue
+                
+            with open(log_file, "r") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    try:
+                        data = json.loads(line)
+                        content = data.get("content", "")
+                        if data.get("source") == "USER_EXPLICIT" and data.get("type") == "USER_INPUT":
+                            user_req = re.sub(r"<[^>]+>", "", content).strip()
+                            # Look specifically for styling/formatting/editor preferences
+                            if any(w in user_req.lower() for w in ["style", "editor", "font", "image", "color", "layout", "wix", "tone", "word", "jargon", "gritty"]):
+                                clean_req = " ".join([l.strip() for l in user_req.split("\n") if l.strip()])
+                                feedback_collected.append(clean_req)
+                    except Exception:
+                        continue
+    except Exception as e:
+        print(f"Warning: Failed to scan historical transcripts: {e}")
+        
+    if feedback_collected:
+        # De-duplicate to prevent redundant rules
+        unique_feedback = list(set(feedback_collected))
+        formatted_feedback = "\n".join(f"- {fb}" for fb in unique_feedback[-15:]) # Keep last 15 inputs
+        return f"\n\n### Historical User Styling & Editorial Feedback (Learn & Align):\n{formatted_feedback}"
+    return ""
+
 def load_system_instructions(agent_name: str) -> str:
     """
     Reads the gemini.md file and extracts the specific system instructions for the requested agent.
@@ -179,6 +224,11 @@ def load_system_instructions(agent_name: str) -> str:
         creator_email = os.getenv("CREATOR_EMAIL", "jpiikkila@kordic.ai")
         instructions = re.sub(r"\[[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\]", creator_email, instructions)
         instructions = instructions.replace("[EMAIL_ADDRESS]", creator_email)
+        
+        if agent_name == "Content Editor":
+            historical_context = load_historical_feedback()
+            if historical_context:
+                instructions += historical_context
         
         return instructions
     except FileNotFoundError:
