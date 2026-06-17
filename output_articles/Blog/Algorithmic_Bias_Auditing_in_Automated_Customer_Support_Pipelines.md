@@ -1,4 +1,4 @@
-[Technical Draft for: Auditing Autonomous Multi-Agent Systems for Compliance and Traceability]
+[Technical Draft for: Algorithmic Bias Auditing in Automated Customer Support Pipelines]
 Scenario: Resolving operations bottlenecks.
 Business Challenge: High labor costs and duplicate entries.
 Implementation steps:
