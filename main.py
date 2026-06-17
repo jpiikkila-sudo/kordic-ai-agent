@@ -364,6 +364,229 @@ So, follow this layout to build your next integration model.
         
     return "Mock Response"
 
+def convert_markdown_to_styled_html(title, markdown_text):
+    # Regex replacements for inline styles
+    # Bold
+    markdown_text = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", markdown_text)
+    # Inline code
+    markdown_text = re.sub(r"`([^`]+)`", r"<code>\1</code>", markdown_text)
+    # Images
+    markdown_text = re.sub(r"!\[(.*?)\]\((.*?)\)", r'<div class="image-wrapper"><img src="\2" alt="\1" /><div class="caption">\1</div></div>', markdown_text)
+    # Links
+    markdown_text = re.sub(r"\[(.*?)\]\((.*?)\)", r'<a href="\2" target="_blank">\1</a>', markdown_text)
+    
+    # Split by double newlines for block processing
+    blocks = markdown_text.split("\n\n")
+    body_nodes = []
+    
+    for block in blocks:
+        block = block.strip()
+        if not block:
+            continue
+            
+        # Code Block
+        if block.startswith("```"):
+            lines = block.split("\n")
+            code_content = "\n".join(lines[1:-1]) if lines[-1].startswith("```") else "\n".join(lines[1:])
+            body_nodes.append(f"<pre><code>{code_content}</code></pre>")
+            continue
+            
+        # Headers
+        if block.startswith("# "):
+            body_nodes.append(f"<h1>{block[2:]}</h1>")
+            continue
+        elif block.startswith("## "):
+            body_nodes.append(f"<h2>{block[3:]}</h2>")
+            continue
+        elif block.startswith("### "):
+            body_nodes.append(f"<h3>{block[4:]}</h3>")
+            continue
+        elif block.startswith("#### "):
+            body_nodes.append(f"<h4>{block[5:]}</h4>")
+            continue
+            
+        # Lists
+        lines = block.split("\n")
+        first_line = lines[0].strip()
+        is_bullet = first_line.startswith("* ") or first_line.startswith("- ")
+        is_num = re.match(r"^\d+\.\s+", first_line) is not None
+        
+        if is_bullet or is_num:
+            current_list_type = "ol" if is_num else "ul"
+            list_items = []
+            for line in lines:
+                line_content = line.strip()
+                if current_list_type == "ol":
+                    line_content = re.sub(r"^\d+\.\s+", "", line_content)
+                else:
+                    line_content = re.sub(r"^[*+-]\s+", "", line_content)
+                list_items.append(f"<li>{line_content}</li>")
+            body_nodes.append(f"<{current_list_type}>" + "".join(list_items) + f"</{current_list_type}>")
+        else:
+            # Check for subtitle
+            if len(body_nodes) == 1 and body_nodes[0].startswith("<h1>") and block.lower().startswith("subtitle:"):
+                subtitle_text = block.split(":", 1)[1].strip()
+                body_nodes.append(f'<div class="subtitle">{subtitle_text}</div>')
+            else:
+                body_nodes.append(f"<p>{block}</p>")
+                
+    body_content = "\n".join(body_nodes)
+    
+    html_template = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {{
+            --bg-color: #0d0f14;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            --accent-color: #3b82f6;
+            --code-bg: #1e293b;
+        }}
+
+        body {{
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            line-height: 1.6;
+        }}
+
+        .container {{
+            max-width: 800px;
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 48px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }}
+
+        h1, h2, h3, h4 {{
+            font-family: 'Outfit', sans-serif;
+            color: #ffffff;
+            font-weight: 700;
+        }}
+
+        h1 {{
+            font-size: 2.5rem;
+            line-height: 1.2;
+            margin-bottom: 8px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }}
+
+        .subtitle {{
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            font-weight: 400;
+        }}
+
+        h2 {{
+            font-size: 1.75rem;
+            margin-top: 40px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 8px;
+        }}
+
+        h3 {{
+            font-size: 1.25rem;
+            margin-top: 24px;
+        }}
+
+        p {{
+            margin-bottom: 20px;
+        }}
+
+        strong {{
+            color: #ffffff;
+        }}
+
+        a {{
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color 0.2s;
+            border-bottom: 1px dashed var(--accent-color);
+        }}
+
+        a:hover {{
+            color: #60a5fa;
+        }}
+
+        ul, ol {{
+            margin-bottom: 24px;
+            padding-left: 24px;
+        }}
+
+        li {{
+            margin-bottom: 10px;
+        }}
+
+        pre {{
+            background-color: var(--code-bg);
+            padding: 16px;
+            border-radius: 12px;
+            overflow-x: auto;
+            border: 1px solid var(--card-border);
+            margin-bottom: 24px;
+        }}
+
+        code {{
+            font-family: 'Courier New', Courier, monospace;
+            background-color: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }}
+
+        pre code {{
+            background-color: transparent;
+            padding: 0;
+            font-size: 1em;
+            color: #f8fafc;
+        }}
+
+        .image-wrapper {{
+            margin: 32px 0;
+            text-align: center;
+        }}
+
+        .image-wrapper img {{
+            max-width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-border);
+        }}
+
+        .caption {{
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-style: italic;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        {body_content}
+    </div>
+</body>
+</html>"""
+    return html_template
+
 async def run_pipeline():
     print(f"Initializing Kordic Hub Content Engine (Mock Mode: {MOCK_MODE})...")
 
@@ -655,6 +878,13 @@ async def run_pipeline():
         with open(local_file_path, "w") as f:
             f.write(editor_output)
         log_status("💾 LOCAL FILE", f"Saved formatted article locally at: {local_file_path}", Colors.GREEN)
+
+        # Generate and save HTML preview
+        html_content = convert_markdown_to_styled_html(polished_title, editor_output)
+        html_file_path = local_file_path.replace(".md", ".html")
+        with open(html_file_path, "w") as f:
+            f.write(html_content)
+        log_status("💾 HTML PREVIEW", f"Saved styled HTML preview at: {html_file_path}", Colors.GREEN)
 
         # Step 2f: Publisher posts to Wix (or gets mock publish ID)
         log_status("⚡ RUNNING", f"Phase 4: Publisher sending '{polished_title}' to Wix CMS...", Colors.GREEN)
